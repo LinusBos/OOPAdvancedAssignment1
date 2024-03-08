@@ -17,7 +17,6 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
 
 class VillageTest {
-
     private Village testVillage;
     private PrintStream printStream;
     private ByteArrayOutputStream byteArrayOutputStream;
@@ -25,9 +24,7 @@ class VillageTest {
     @BeforeEach
     void setupVillage() {
         testVillage = new Village();
-
     }
-
     @Test
     public void testAddTwoWorkersWithDifferentInputs() {
         // Given
@@ -119,7 +116,6 @@ class VillageTest {
         assertEquals(expectedMax, actualMax);
    }
 
-
    /*
    The next test is one of the tasks for the assignment.
    However, this test will fail due to AddWorker() in Village doesn't check if maxWorkers has been reached.
@@ -159,7 +155,6 @@ class VillageTest {
         // Then
         assertEquals(expectedArraySize, testVillage.getWorkers().size());
     }
-
     @Test
     public void checkIsFullIsTrueWhenMaxWorkerHasBeenReachedAndThatItHasBeenUpdated() {
         //Given
@@ -195,7 +190,6 @@ class VillageTest {
                 () -> assertNotEquals(before, actual)
         );
     }
-
     @Test
     public void testToGoToNextDayWithoutWorkersWorks() {
        // Given
@@ -232,4 +226,175 @@ class VillageTest {
                 () -> assertEquals(expectedDays, actualDays)
         );
     }
+    @Test
+    public void testThatWorkersDiesFromHungerAfterCorrectAmountOfDaysAndGameOver() {
+       // Given
+       String workerName = "Lumberjack";
+       String workerOccupation = "lumberjack";
+       testVillage.AddWorker(workerName, workerOccupation);
+       testVillage.setFood(0);
+       int expectedDays = 6; // Worker shouldn't be alive after day 5
+       boolean expectedAlive = false;
+       boolean expectedGameOver = true;
+
+       // When
+        for (int i = 0; i < expectedDays; i++) {
+            testVillage.Day();
+        }
+
+        // Then
+        assertAll(
+                () -> assertEquals(expectedDays, testVillage.getDaysGone()),
+                () -> assertEquals(expectedGameOver, testVillage.isGameOver()),
+                () -> assertEquals(expectedAlive, testVillage.getWorkers().get(0).isAlive())
+        );
+
+    }
+    @Test
+    public void testThatWorkerIsStillAliveOnDayFive() {
+        // Given
+        String workerName = "Lumberjack";
+        String workerOccupation = "lumberjack";
+        testVillage.AddWorker(workerName, workerOccupation);
+        testVillage.setFood(0);
+        int expectedDays = 5; // Worker should be alive after day 5
+        Boolean expectedAlive = true;
+
+        // When
+        for (int i = 0; i < expectedDays; i++) {
+            testVillage.Day();
+        }
+
+        // Then
+        assertAll(
+                () -> assertEquals(expectedDays, testVillage.getDaysGone()),
+                () -> assertEquals(expectedAlive, testVillage.getWorkers().get(0).isAlive())
+        );
+
+    }
+    @Test
+    public void confirmThatAddedProjectGetIntoArrayList() {
+       // Given
+        String expectedProjectName = "House";
+        int woodNeeded = 6; // Bug in Village, using > instead of >= so need 1 more than actual needed material
+        int metalNeeded = 1;
+
+        testVillage.setWood(woodNeeded);
+        testVillage.setMetal(metalNeeded);
+
+
+        // When
+        testVillage.AddProject(expectedProjectName);
+
+        // Then
+        assertEquals(expectedProjectName, testVillage.getProjects().get(0).getName());
+    }
+    @Test
+    public void confirmThatProjectsAreNotAddedWithWrongName() {
+       // Given
+        String notIncludedProjectName = "Something";
+        testVillage.setMetal(20);
+        testVillage.setWood(20);
+        boolean arrayListIsEmpty = true;
+
+        // When
+        testVillage.AddProject(notIncludedProjectName);
+        boolean actualArrayListIsEmpty = testVillage.getProjects().isEmpty();
+
+        // Then
+        assertEquals(arrayListIsEmpty, actualArrayListIsEmpty);
+
+    }
+    @Test
+    public void confirmThatProjectsAreNotAddedWithZeroMaterials() {
+        // Given
+        String notIncludedProjectName = "House";
+        testVillage.setMetal(0);
+        testVillage.setWood(0);
+        boolean arrayListIsEmpty = true;
+
+        // When
+        testVillage.AddProject(notIncludedProjectName);
+        boolean actualArrayListIsEmpty = testVillage.getProjects().isEmpty();
+
+        // Then
+        assertEquals(arrayListIsEmpty, actualArrayListIsEmpty);
+
+    }
+    @Test
+    public void confirmThatDaysToCompleteOnProjectsDoesntChangeWithNoWorkers() {
+       // Given
+        String projectName = "House";
+        int daysNeededToComplete = 3;
+
+        testVillage.setWood(10);
+        testVillage.setMetal(10);
+        testVillage.setFood(30);
+        testVillage.AddProject(projectName);
+
+        // When
+        testVillage.Day();
+        int daysLeftToComplete = testVillage.getProjects().get(0).getDaysLeft();
+
+        // Then
+        assertEquals(daysNeededToComplete, daysLeftToComplete);
+    }
+    @Test
+    public void confirmThatWorkersCanWorkOnProject() {
+       // Given
+        String workerName = "Builder";
+        String workerOccupation = "builder";
+        String projectName = "House";
+        int daysNeededToComplete = 3;
+
+        testVillage.AddWorker(workerName, workerOccupation);
+        testVillage.setWood(10);
+        testVillage.setMetal(10);
+        testVillage.setFood(30);
+        testVillage.AddProject(projectName);
+
+        // When
+        testVillage.Day();
+        int daysLeftToComplete = testVillage.getProjects().get(0).getDaysLeft();
+
+        // Then
+        assertNotEquals(daysNeededToComplete, daysLeftToComplete);
+    }
+    @Test
+    public void confirmThatFinishedWoodmillIncreasesWoodAndIsPutInBuildings() {
+        // Given
+        String workerName = "Builder";
+        String workerOccupation = "builder";
+        String projectName = "Woodmill";
+        int daysNeededToComplete = 5;
+
+        testVillage.setWood(10);
+        testVillage.setMetal(10);
+        testVillage.setFood(50);
+        testVillage.AddWorker(workerName, workerOccupation);
+        testVillage.AddProject(projectName);
+
+        int staringWoodPerDay = testVillage.getWoodPerDay();
+        boolean expectedBuildingListConatinsWoodmill = true;
+        int expectedWoodPerDay = 2;
+
+
+        // When
+        for (int i = 0; i < daysNeededToComplete; i++) {
+            testVillage.Day();
+        }
+
+        int buildingListSize = testVillage.getBuildings().size();
+        boolean actuallyConatinsWoodmill = testVillage.getBuildings().get(buildingListSize- 1).getName().equals(projectName);
+        int actualWoodPerDay = testVillage.getWoodPerDay();
+
+        // Then
+        assertAll(
+                () -> assertNotEquals(staringWoodPerDay, actualWoodPerDay),
+                () -> assertEquals(expectedBuildingListConatinsWoodmill, actuallyConatinsWoodmill),
+                () -> assertEquals(expectedWoodPerDay, actualWoodPerDay)
+        );
+
+    }
+
 }
