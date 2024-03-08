@@ -397,4 +397,40 @@ class VillageTest {
 
     }
 
+    @Test
+    public void confirmThatGameIsPossibleToWin() { // Given
+        String workerName = "Builder";
+        String workerOccupation = "builder";
+        String projectName = "Castle";
+        int daysNeededToComplete = 50;
+
+        testVillage.setWood(1000);
+        testVillage.setMetal(1000);
+        testVillage.setFood(5000);
+        testVillage.AddWorker(workerName, workerOccupation);
+        testVillage.AddProject(projectName);
+
+        boolean expectedBuildingListConatinsCastle = true;
+        boolean expectedGameOver = true;
+        boolean startingGameOver = testVillage.isGameOver();
+
+
+        // When
+        for (int i = 0; i < daysNeededToComplete; i++) {
+            testVillage.Day();
+        }
+
+        int buildingListSize = testVillage.getBuildings().size();
+        boolean actuallyConatinsCastle = testVillage.getBuildings().get(buildingListSize- 1).getName().equals(projectName);
+        boolean actuallyGameOver = testVillage.isGameOver();
+
+        // Then
+        assertAll(
+                () -> assertEquals(expectedBuildingListConatinsCastle, actuallyConatinsCastle),
+                () -> assertEquals(expectedGameOver, actuallyGameOver),
+                () -> assertNotEquals(startingGameOver, actuallyGameOver)
+        );
+
+    }
+
 }
